@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Language Detection</title>
+    <script>
+        function clearSign() {
+            fetch('/clear_sign', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById('detected-sign').innerText = '';
+                    }
+                });
+        }
+
+        function speakSign() {
+            fetch('/current_sign')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.sign) {
+                        var audioUrl = '/audio/' + encodeURIComponent(data.sign);
+                        var audio = new Audio(audioUrl);
+                        audio.play().catch(err => console.error('Error playing audio:', err));
+                    }
+                });
+        }
+
+        setInterval(() => {
+            fetch('/current_sign')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('detected-sign').innerText = data.sign;
+                });
+        }, 1000);
+    </script>
+</head>
+<body>
+    <h1>Sign Language Detection</h1>
+    <img src="{{ url_for('video_feed') }}" width="640" height="480">
+    <h2>Detected Sign: <span id="detected-sign"></span></h2>
+    <button onclick="clearSign()">Clear</button>
+    <button onclick="speakSign()">Speak</button>
+</body>
+</html>
